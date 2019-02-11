@@ -16,7 +16,7 @@ Supply supplemental lighting to winter chicken housing so that the combination o
 - battery power + solar? (would need big battery)
 
 # Hardware
-* Arduino.  I'm using Sparkfun's Uno clone, but almost anything in the *duino family should work.
+* Arduino.  I've us both an original Diecimila and Sparkfun's Uno clone, but almost anything in the *duino family should work.
 * 3-color LED strip.  (e.g. https://www.adafruit.com/products/346)
 * MOSFETs to switch power into the LED strip (https://www.adafruit.com/product/355)
 * Adequate power supply (depends on details of your chosen LED strip) (https://www.adafruit.com/products/352)
