@@ -1,6 +1,6 @@
 // supplemental chicken coop light controller
 
-// (c) 2016 Joshua Heling <jrh@netfluvia.org>
+// (c) 2016-9 Joshua Heling <jrh@netfluvia.org>
 // BSD license
 
 #include <Wire.h>
@@ -190,9 +190,9 @@ void led_power(int p) {
   s += p;
   log_debug(s);
 
-  analogWrite(GREENPIN, p);
+  //analogWrite(GREENPIN, p);
   analogWrite(REDPIN, p);
-  analogWrite(BLUEPIN, p);
+  //analogWrite(BLUEPIN, p);
 }
 
 // called at init at when sunchange values change
@@ -307,6 +307,32 @@ void update_sunchange(int event, unsigned long observed) {
       s += sunchange[event].str;
       s += " value.";
       log_warn(s);      
+
+      // prevent excessive changes to our idea of when the sun rises or sets
+
+      // First, in no circumstance do we want to move too much in a single day (this generally
+      //   protects against an entire class of corner cases that could otherwise mess with
+      //   state).
+      if (abs(sunchange[event].interval - observed) > max_sunchange) {
+        s = "Limiting big single step ";
+        s += sunchange[event].str;
+        s += " change (";
+        s += sunchange[event].interval;
+        s += " to ";
+        s += observed;        
+        s += " to max single-step change of ";
+        s += max_sunchange;
+        log_warn(s);
+        if ((sunchange[event].interval - observed) < 0) {
+          // we saw change earlier in the day than previous interval
+          observed = sunchange[event].interval - max_sunchange;
+        } else {
+          // we saw change later in the day than previous interval
+          observed = sunchange[event].interval + max_sunchange;
+        }
+      }
+
+      // Now enforce abolute limits on reasonable sunrise/sunset values
       if (observed < sunchange[event].minval) {                   
         // no matter what, don't set the change below the defined minimum ...
         s = "Clamping below-min ";
@@ -327,25 +353,8 @@ void update_sunchange(int event, unsigned long observed) {
         s += sunchange[event].maxval;
         log_warn(s);
         observed = sunchange[event].maxval;
-      } else if (abs(sunchange[event].interval - observed) > max_sunchange) {
-        // ... or move too much in a single step
-        s = "Limiting big single step ";
-        s += sunchange[event].str;
-        s += " change (";
-        s += sunchange[event].interval;
-        s += " to ";
-        s += observed;        
-        s += " to max single-step change of ";
-        s += max_sunchange;
-        log_warn(s);
-        if ((sunchange[event].interval - observed) < 0) {
-          // we saw change earlier in the day than previous interval
-          observed = sunchange[event].interval - max_sunchange;
-        } else {
-          // we saw change later in the day than previous interval
-          observed = sunchange[event].interval + max_sunchange;
-        }
-      }
+      } 
+      
       sunchange[event].interval = observed;      
       s = sunchange[event].str;
       s += " value is now ";
@@ -432,9 +441,6 @@ void setup() {
   // (NB: these "tests" are intended to be momentarily uncommented, uploaded, and run while watching
   //  Serial output.  The testing all happens from setup() - letting the sketch run with one of these tests
   //  uncommented won't produce meaningful behavior.)
-  //
-  // (updated note - 2019 -- because the tests operate via update_sunchange(), they're subject to the logic
-  //  that limits day-to-day rate of change. Probably want a set of tests that set absolute values, too.)
   
   // TEST: should conclude no supplemental light needed
 //  update_sunchange(SUNRISE, 18000);
@@ -444,6 +450,24 @@ void setup() {
   // TEST: should conclude 7200s supplemental needed, turning on at 21600
 //  update_sunchange(SUNRISE, 28800);
 //  update_sunchange(SUNSET, 75600);         
+//  update_light_timing();
+
+  //
+  // The above tests operate via update_sunchange(), so they're subject to the logic
+  //  that limits day-to-day rate of change. The tests below are the same but set absolute values (for 
+  //  immediate effect).
+  // 
+  // NOTE: to run these, uncomment out a section, upload, then comment and upload again. *Then* you should see
+  //  the expected results. (Ugh - this can be made a lot better.)
+
+  // TEST: should conclude no supplemental light needed
+//  write_ul_to_EEPROM(sunchange[SUNRISE].ee_addr, 18000);  
+//  write_ul_to_EEPROM(sunchange[SUNSET].ee_addr, 75600);
+//  update_light_timing();
+
+  // TEST: should conclude 7200s supplemental needed, turning on at 21600
+//  write_ul_to_EEPROM(sunchange[SUNRISE].ee_addr, 28800);  
+//  write_ul_to_EEPROM(sunchange[SUNSET].ee_addr, 75600);
 //  update_light_timing();
 
   // TEST cleanup: write defaults to eeprom
