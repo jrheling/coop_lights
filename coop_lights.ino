@@ -120,7 +120,7 @@ unsigned long dimming_time = 1200;         // duration of slow fade in/out of li
 
 int max_power = 128;                 // LED strings are fully on at 256 (but also use the most power then)
 
-const int natural_light_lowThresh = 700;  // photoresistor value below which we consider dark - FIXME: 150
+const int natural_light_lowThresh = 200;  // photoresistor value below which we consider dark 
 const int natural_light_debounce_s = 60;  // number of seconds we need to see above/below threshold before 
                                           //   we conclude natural light has changed
 
@@ -313,7 +313,7 @@ void update_sunchange(int event, unsigned long observed) {
         s += sunchange[event].str;
         s += " value ";
         s += observed;
-        s = " to defined minimum ";
+        s += " to defined minimum ";
         s += sunchange[event].minval;
         log_warn(s);
         observed = sunchange[event].minval;
@@ -323,7 +323,7 @@ void update_sunchange(int event, unsigned long observed) {
         s += sunchange[event].str;
         s += " value ";
         s += observed;
-        s = " to defined maximum ";
+        s += " to defined maximum ";
         s += sunchange[event].maxval;
         log_warn(s);
         observed = sunchange[event].maxval;
@@ -432,6 +432,9 @@ void setup() {
   // (NB: these "tests" are intended to be momentarily uncommented, uploaded, and run while watching
   //  Serial output.  The testing all happens from setup() - letting the sketch run with one of these tests
   //  uncommented won't produce meaningful behavior.)
+  //
+  // (updated note - 2019 -- because the tests operate via update_sunchange(), they're subject to the logic
+  //  that limits day-to-day rate of change. Probably want a set of tests that set absolute values, too.)
   
   // TEST: should conclude no supplemental light needed
 //  update_sunchange(SUNRISE, 18000);
