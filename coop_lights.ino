@@ -1,3 +1,4 @@
+
 // supplemental chicken coop light controller
 
 // (c) 2016-9 Joshua Heling <jrh@netfluvia.org>
@@ -5,7 +6,7 @@
 
 #include <Wire.h>
 #include <EEPROM.h>
-#include "RTClib.h"
+#include <RTClib.h>
 
 //////////////////////////////////////////////// log helper macros
 
@@ -118,7 +119,7 @@ unsigned int total_light_minutes = 900;    // how many minutes of light (supplem
 unsigned long dimming_time = 1200;         // duration of slow fade in/out of light.  This happens before/after
                                            //   the supplemental light period
 
-int max_power = 128;                 // LED strings are fully on at 256 (but also use the most power then)
+int max_power = 256;                 // LED strings are fully on at 256 (but also use the most power then)
 
 const int natural_light_lowThresh = 200;  // photoresistor value below which we consider dark 
 const int natural_light_debounce_s = 60;  // number of seconds we need to see above/below threshold before 
